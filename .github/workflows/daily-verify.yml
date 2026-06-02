@@ -1,0 +1,151 @@
+name: Daily Golden Verify
+
+on:
+  schedule:
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'PrivacyGUI branch to test'
+        required: false
+        default: 'main'
+        type: string
+      locales:
+        description: 'Comma-separated locales (e.g., en,es,fr)'
+        required: false
+        default: 'en'
+        type: string
+      screens:
+        description: 'Comma-separated screen widths (e.g., 480,1280)'
+        required: false
+        default: '480,1280'
+        type: string
+
+jobs:
+  verify-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout orchestration repo
+        uses: actions/checkout@v4
+
+      - name: Checkout baseline branch
+        uses: actions/checkout@v4
+        with:
+          ref: baseline
+          path: baseline-checkout
+
+      - name: Copy baseline goldens
+        run: cp -r baseline-checkout/goldens ./goldens
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Configure SSH for private dependencies
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.UI_KIT_DEPLOY_KEY }}
+
+      - name: Configure git to use SSH for GitHub
+        run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      - name: Clone PrivacyGUI
+        run: git clone --branch "${{ inputs.branch || 'main' }}" --depth 1 https://github.com/linksys/PrivacyGUI.git app
+
+      - name: Setup PrivacyGUI environment
+        working-directory: app
+        run: |
+          cp assets/agents/env.template assets/agents/.env
+          flutter pub get
+
+      - name: Sync baseline into app
+        run: scripts/sync_baseline_into_app.sh goldens app
+
+      - name: Run golden verify
+        working-directory: app
+        run: sh run_golden_verify.sh -l "${{ inputs.locales || 'en' }}" -s "${{ inputs.screens || '480,1280' }}"
+
+      - name: Set today's date
+        id: date
+        run: echo "today=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout gh-pages branch
+        run: |
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            git fetch origin gh-pages
+            git worktree add gh-pages-dir gh-pages
+          else
+            git worktree add --detach gh-pages-dir
+            cd gh-pages-dir
+            git checkout --orphan gh-pages
+            git rm -rf . || true
+            cd ..
+          fi
+
+      - name: Publish verify report to gh-pages
+        env:
+          TODAY: ${{ steps.date.outputs.today }}
+        run: |
+          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir "verify/$TODAY"
+
+      - name: Prune old verify reports
+        run: |
+          scripts/prune_old_verify_reports.sh gh-pages-dir 7
+
+      - name: Commit and push gh-pages
+        env:
+          TODAY: ${{ steps.date.outputs.today }}
+        run: |
+          cd gh-pages-dir
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to gh-pages"
+          else
+            git commit -m "Verify report $TODAY"
+            git push origin gh-pages
+          fi
+
+      - name: Detect golden failures
+        id: detect
+        run: |
+          FAIL_COUNT=$(scripts/detect_golden_failures.sh app || true)
+          echo "fail_count=$FAIL_COUNT" >> "$GITHUB_OUTPUT"
+          scripts/detect_golden_failures.sh app
+
+        continue-on-error: true
+
+      - name: Open GitHub Issue on failure
+        if: steps.detect.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TODAY: ${{ steps.date.outputs.today }}
+          BRANCH: ${{ inputs.branch || 'main' }}
+          FAIL_COUNT: ${{ steps.detect.outputs.fail_count }}
+        run: |
+          gh issue create \
+            --title "Golden verify failed — $TODAY ($BRANCH)" \
+            --body "$(cat <<EOF
+          @PeterJhongLinksys golden diffs detected on \`$BRANCH\`.
+
+          Report: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/$TODAY/golden_verify_report.html
+
+          Failures: $FAIL_COUNT
+          EOF
+          )"
+
+      - name: Output results
+        env:
+          TODAY: ${{ steps.date.outputs.today }}
+        run: |
+          echo "Verify completed"
+          echo "Report URL: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/$TODAY/golden_verify_report.html"

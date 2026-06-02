@@ -1,0 +1,130 @@
+name: Generate Golden Baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'PrivacyGUI branch to test'
+        required: true
+        default: 'main'
+        type: string
+      locales:
+        description: 'Comma-separated locales (e.g., en,es,fr)'
+        required: true
+        default: 'en'
+        type: string
+      screens:
+        description: 'Comma-separated screen widths (e.g., 480,1280)'
+        required: true
+        default: '480,1280'
+        type: string
+
+jobs:
+  generate-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout orchestration repo
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Configure SSH for private dependencies
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.UI_KIT_DEPLOY_KEY }}
+
+      - name: Configure git to use SSH for GitHub
+        run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      - name: Clone PrivacyGUI
+        run: git clone --branch "${{ inputs.branch }}" --depth 1 https://github.com/linksys/PrivacyGUI.git app
+
+      - name: Setup PrivacyGUI environment
+        working-directory: app
+        run: |
+          cp assets/agents/env.template assets/agents/.env
+          flutter pub get
+
+      - name: Generate golden snapshots
+        working-directory: app
+        run: sh run_generate_loc_snapshots.sh -l "${{ inputs.locales }}" -s "${{ inputs.screens }}"
+
+      - name: Collect baseline from app
+        run: scripts/collect_baseline_from_app.sh app goldens
+
+      - name: Configure git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit baseline to baseline branch
+        run: |
+          cp -r goldens /tmp/new-goldens
+
+          if git ls-remote --heads origin baseline | grep -q baseline; then
+            git fetch origin baseline
+            git checkout baseline
+          else
+            git checkout --orphan baseline
+            git rm -rf . || true
+          fi
+
+          rm -rf goldens
+          mv /tmp/new-goldens goldens
+          git add goldens/
+
+          if git diff --cached --quiet; then
+            echo "No changes to baseline"
+          else
+            git commit -m "$(cat <<EOF
+          Update golden baseline from ${{ inputs.branch }}
+
+          Branch: ${{ inputs.branch }}
+          Locales: ${{ inputs.locales }}
+          Screens: ${{ inputs.screens }}
+          Triggered-by: ${{ github.actor }}
+          EOF
+          )"
+            git push --force origin baseline
+          fi
+
+      - name: Checkout gh-pages branch
+        run: |
+          git checkout -
+
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            git fetch origin gh-pages
+            git worktree add gh-pages-dir gh-pages
+          else
+            git worktree add --detach gh-pages-dir
+            cd gh-pages-dir
+            git checkout --orphan gh-pages
+            git rm -rf . || true
+            cd ..
+          fi
+
+      - name: Publish gallery report to gh-pages
+        run: |
+          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir golden
+
+          cd gh-pages-dir
+          git add golden/
+
+          if git diff --cached --quiet; then
+            echo "No changes to gallery report"
+          else
+            git commit -m "Update golden gallery report from ${{ inputs.branch }}"
+            git push origin gh-pages
+          fi
+
+      - name: Output results
+        run: |
+          echo "Baseline committed to 'baseline' branch"
+          echo "Gallery report published to GitHub Pages"
+          echo "Gallery URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/golden/golden_gallery_report.html"
