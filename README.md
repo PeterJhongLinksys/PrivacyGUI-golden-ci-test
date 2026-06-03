@@ -37,15 +37,11 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 | **Generate Golden** (mode=`baseline`) | Manual | Generate gallery + commit baseline from dev branch → publish to `golden/dev/` |
 | **Daily Golden Verify** | Daily cron (06:00 Taiwan) + manual | Diff current dev branch render against baseline, publish verify report, open Issue on failure |
 
-## Where to look
+## Reports
 
-| Report | URL |
-|--------|-----|
-| USP showcase gallery | `.../golden/usp/golden_gallery_report.html` |
-| Dev baseline gallery | `.../golden/dev/golden_gallery_report.html` |
-| Daily verify (dev) | `.../verify/dev/YYYY-MM-DD/golden_verify_report.html` |
-
-Base URL: `https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/`
+<!-- REPORTS:START -->
+_No reports yet. Run the workflows to generate links here._
+<!-- REPORTS:END -->
 
 ## Branch structure
 

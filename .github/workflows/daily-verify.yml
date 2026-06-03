@@ -146,6 +146,19 @@ jobs:
           EOF
           )"
 
+      - name: Update README report links
+        run: |
+          git checkout main
+          scripts/update_readme_links.sh gh-pages-dir README.md "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "No changes to README"
+          else
+            git commit -m "docs: update report links in README"
+            git push origin main
+          fi
+
       - name: Output results
         env:
           TODAY: ${{ steps.date.outputs.today }}
