@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'PrivacyGUI branch to test'
+        description: 'PrivacyGUI branch to verify against baseline'
         required: false
         default: 'main'
         type: string
@@ -22,7 +22,7 @@ on:
         type: string
 
 jobs:
-  verify-golden:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -91,15 +91,15 @@ jobs:
             cd ..
           fi
 
-      - name: Publish verify report to gh-pages
+      - name: Publish verify report
         env:
           TODAY: ${{ steps.date.outputs.today }}
         run: |
-          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir "verify/$TODAY"
+          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir "verify/dev/$TODAY"
 
       - name: Prune old verify reports
         run: |
-          scripts/prune_old_verify_reports.sh gh-pages-dir 7
+          scripts/prune_old_verify_reports.sh gh-pages-dir/verify/dev 7
 
       - name: Commit and push gh-pages
         env:
@@ -111,18 +111,17 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to gh-pages"
           else
-            git commit -m "Verify report $TODAY"
+            git commit -m "Verify report dev/$TODAY"
             git push origin gh-pages
           fi
 
       - name: Detect golden failures
         id: detect
+        continue-on-error: true
         run: |
           FAIL_COUNT=$(scripts/detect_golden_failures.sh app || true)
           echo "fail_count=$FAIL_COUNT" >> "$GITHUB_OUTPUT"
           scripts/detect_golden_failures.sh app
-
-        continue-on-error: true
 
       - name: Open GitHub Issue on failure
         if: steps.detect.outcome == 'failure'
@@ -137,7 +136,7 @@ jobs:
             --body "$(cat <<EOF
           @PeterJhongLinksys golden diffs detected on \`$BRANCH\`.
 
-          Report: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/$TODAY/golden_verify_report.html
+          Report: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/$TODAY/golden_verify_report.html
 
           Failures: $FAIL_COUNT
           EOF
@@ -148,4 +147,4 @@ jobs:
           TODAY: ${{ steps.date.outputs.today }}
         run: |
           echo "Verify completed"
-          echo "Report URL: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/$TODAY/golden_verify_report.html"
+          echo "Report: https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/$TODAY/golden_verify_report.html"

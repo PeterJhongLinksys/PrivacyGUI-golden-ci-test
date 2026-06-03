@@ -1,8 +1,16 @@
-name: Generate Golden Baseline
+name: Generate Golden
 
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: 'Mode: showcase (gallery only) or baseline (gallery + baseline for daily verify)'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - showcase
+          - baseline
       branch:
         description: 'PrivacyGUI branch to test'
         required: true
@@ -20,7 +28,7 @@ on:
         type: string
 
 jobs:
-  generate-golden:
+  generate:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -55,16 +63,16 @@ jobs:
         working-directory: app
         run: sh run_generate_loc_snapshots.sh -l "${{ inputs.locales }}" -s "${{ inputs.screens }}"
 
-      - name: Collect baseline from app
-        run: scripts/collect_baseline_from_app.sh app goldens
-
       - name: Configure git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit baseline to baseline branch
+      # --- Baseline mode only: save baseline to dedicated branch ---
+      - name: Collect and commit baseline
+        if: inputs.mode == 'baseline'
         run: |
+          scripts/collect_baseline_from_app.sh app goldens
           cp -r goldens /tmp/new-goldens
 
           if git ls-remote --heads origin baseline | grep -q baseline; then
@@ -82,22 +90,24 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to baseline"
           else
-            git commit -m "$(cat <<EOF
-          Update golden baseline from ${{ inputs.branch }}
-
-          Branch: ${{ inputs.branch }}
-          Locales: ${{ inputs.locales }}
-          Screens: ${{ inputs.screens }}
-          Triggered-by: ${{ github.actor }}
-          EOF
-          )"
+            git commit -m "Update baseline from ${{ inputs.branch }} [${{ inputs.locales }}] [${{ inputs.screens }}]"
             git push --force origin baseline
+          fi
+
+          git checkout -
+
+      # --- Publish gallery report to gh-pages ---
+      - name: Determine gallery subpath
+        id: gallery
+        run: |
+          if [ "${{ inputs.mode }}" = "showcase" ]; then
+            echo "subpath=golden/usp" >> "$GITHUB_OUTPUT"
+          else
+            echo "subpath=golden/dev" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Checkout gh-pages branch
         run: |
-          git checkout -
-
           if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
             git fetch origin gh-pages
             git worktree add gh-pages-dir gh-pages
@@ -109,22 +119,25 @@ jobs:
             cd ..
           fi
 
-      - name: Publish gallery report to gh-pages
+      - name: Publish gallery report
+        env:
+          SUBPATH: ${{ steps.gallery.outputs.subpath }}
         run: |
-          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir golden
+          scripts/publish_to_pages.sh app/test/golden_test gh-pages-dir "$SUBPATH"
 
           cd gh-pages-dir
-          git add golden/
+          git add -A
 
           if git diff --cached --quiet; then
             echo "No changes to gallery report"
           else
-            git commit -m "Update golden gallery report from ${{ inputs.branch }}"
+            git commit -m "Update gallery [${{ inputs.mode }}] from ${{ inputs.branch }}"
             git push origin gh-pages
           fi
 
       - name: Output results
+        env:
+          SUBPATH: ${{ steps.gallery.outputs.subpath }}
         run: |
-          echo "Baseline committed to 'baseline' branch"
-          echo "Gallery report published to GitHub Pages"
-          echo "Gallery URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/golden/golden_gallery_report.html"
+          echo "Mode: ${{ inputs.mode }}"
+          echo "Gallery URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/$SUBPATH/golden_gallery_report.html"

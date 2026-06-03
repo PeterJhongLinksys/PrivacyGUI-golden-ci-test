@@ -24,24 +24,26 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 
 ### 3. First run order
 
-1. **Trigger `Generate Golden Baseline`** (Actions → Generate Golden Baseline → Run workflow)
-   - This seeds the `baseline` branch with golden PNGs and publishes the gallery report
-2. **Trigger `Daily Golden Verify`** manually once to smoke-test
-3. After that, the daily verify runs automatically at Taiwan 06:00
+1. **Trigger `Generate Golden`** with mode = `baseline` (seeds the `baseline` branch + dev gallery)
+2. **Trigger `Generate Golden`** with mode = `showcase`, branch = `usp` (publishes USP gallery)
+3. **Trigger `Daily Golden Verify`** manually once to smoke-test
+4. After that, the daily verify runs automatically at Taiwan 06:00
 
 ## Workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| **Generate Golden Baseline** | Manual (`workflow_dispatch`) | Generate golden PNGs, commit to `baseline` branch, publish gallery report |
-| **Daily Golden Verify** | Daily cron (06:00 Taiwan) + manual | Diff current render against baseline, publish verify report, open Issue on failure |
+| **Generate Golden** (mode=`showcase`) | Manual | Generate gallery report from `usp` branch → publish to `golden/usp/` |
+| **Generate Golden** (mode=`baseline`) | Manual | Generate gallery + commit baseline from dev branch → publish to `golden/dev/` |
+| **Daily Golden Verify** | Daily cron (06:00 Taiwan) + manual | Diff current dev branch render against baseline, publish verify report, open Issue on failure |
 
 ## Where to look
 
 | Report | URL |
 |--------|-----|
-| Gallery (latest baseline) | `.../golden/golden_gallery_report.html` |
-| Daily verify | `.../verify/YYYY-MM-DD/golden_verify_report.html` |
+| USP showcase gallery | `.../golden/usp/golden_gallery_report.html` |
+| Dev baseline gallery | `.../golden/dev/golden_gallery_report.html` |
+| Daily verify (dev) | `.../verify/dev/YYYY-MM-DD/golden_verify_report.html` |
 
 Base URL: `https://peterjhonglinksys.github.io/PrivacyGUI-golden-ci-test/`
 
