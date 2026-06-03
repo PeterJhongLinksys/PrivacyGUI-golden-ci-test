@@ -22,7 +22,7 @@ while IFS= read -r -d '' png_file; do
   target_dir="$BASELINE_DIR/$(dirname "$rel_path")"
   mkdir -p "$target_dir"
   cp "$png_file" "$target_dir/"
-  ((count++))
+  ((count++)) || true
 done < <(find "$APP_DIR/test/golden_test" -type f -name "*.png" -path "*/goldens/*.png" -print0)
 
 if [[ $count -eq 0 ]]; then

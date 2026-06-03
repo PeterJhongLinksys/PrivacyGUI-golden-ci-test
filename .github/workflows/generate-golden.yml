@@ -84,7 +84,7 @@ jobs:
       - name: Collect baseline PNGs
         if: inputs.mode == 'baseline'
         run: |
-          scripts/collect_baseline_from_app.sh app goldens
+          bash scripts/collect_baseline_from_app.sh app goldens 2>&1
           echo "Collected PNGs:"
           find goldens -type f -name "*.png" | wc -l
 
