@@ -95,6 +95,7 @@ jobs:
         if: inputs.mode == 'baseline'
         run: |
           cp -r goldens /tmp/new-goldens
+          rm -rf goldens
 
           if git ls-remote --heads origin baseline | grep -q baseline; then
             git fetch origin baseline
