@@ -69,6 +69,18 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       # --- Baseline mode only: save baseline to dedicated branch ---
+      - name: Debug golden output paths
+        if: inputs.mode == 'baseline'
+        run: |
+          echo "=== Checking app/test/golden_test exists ==="
+          ls app/test/ | head -20
+          echo "=== PNG files in app (first 20) ==="
+          find app/test -type f -name "*.png" | head -20
+          echo "=== PNG count ==="
+          find app/test -type f -name "*.png" | wc -l
+          echo "=== PNGs matching */goldens/*.png pattern ==="
+          find app/test -type f -name "*.png" -path "*/goldens/*.png" | wc -l
+
       - name: Collect baseline PNGs
         if: inputs.mode == 'baseline'
         run: |
