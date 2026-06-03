@@ -50,8 +50,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.UI_KIT_DEPLOY_KEY }}
 
-      - name: Configure git to use SSH for GitHub
-        run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+      - name: Configure git to use SSH for private dependency only
+        run: git config --global url."git@github.com:linksys/privacyGUI-UI-kit".insteadOf "https://github.com/linksys/privacyGUI-UI-kit"
 
       - name: Clone PrivacyGUI
         run: git clone --branch "${{ inputs.branch || 'main' }}" --depth 1 https://github.com/linksys/PrivacyGUI.git app
