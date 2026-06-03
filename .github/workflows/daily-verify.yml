@@ -21,6 +21,10 @@ on:
         default: '480,1280'
         type: string
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   verify:
     runs-on: ubuntu-latest

@@ -27,6 +27,9 @@ on:
         default: '480,1280'
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   generate:
     runs-on: ubuntu-latest
