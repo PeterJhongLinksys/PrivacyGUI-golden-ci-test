@@ -69,10 +69,16 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       # --- Baseline mode only: save baseline to dedicated branch ---
-      - name: Collect and commit baseline
+      - name: Collect baseline PNGs
         if: inputs.mode == 'baseline'
         run: |
           scripts/collect_baseline_from_app.sh app goldens
+          echo "Collected PNGs:"
+          find goldens -type f -name "*.png" | wc -l
+
+      - name: Commit baseline to baseline branch
+        if: inputs.mode == 'baseline'
+        run: |
           cp -r goldens /tmp/new-goldens
 
           if git ls-remote --heads origin baseline | grep -q baseline; then
@@ -80,7 +86,8 @@ jobs:
             git checkout baseline
           else
             git checkout --orphan baseline
-            git rm -rf . || true
+            git reset
+            git clean -fd
           fi
 
           rm -rf goldens
@@ -94,7 +101,7 @@ jobs:
             git push --force origin baseline
           fi
 
-          git checkout -
+          git checkout main
 
       # --- Publish gallery report to gh-pages ---
       - name: Determine gallery subpath
