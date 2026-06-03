@@ -67,7 +67,7 @@ jobs:
 
       - name: Run golden verify
         working-directory: app
-        run: sh run_golden_verify.sh -l "${{ inputs.locales || 'en' }}" -s "${{ inputs.screens || '480,1280' }}"
+        run: bash run_golden_verify.sh -l "${{ inputs.locales || 'en' }}" -s "${{ inputs.screens || '480,1280' }}"
 
       - name: Set today's date
         id: date

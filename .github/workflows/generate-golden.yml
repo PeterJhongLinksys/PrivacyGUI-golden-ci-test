@@ -61,7 +61,7 @@ jobs:
 
       - name: Generate golden snapshots
         working-directory: app
-        run: sh run_generate_loc_snapshots.sh -l "${{ inputs.locales }}" -s "${{ inputs.screens }}"
+        run: bash run_generate_loc_snapshots.sh -l "${{ inputs.locales }}" -s "${{ inputs.screens }}"
 
       - name: Configure git user
         run: |
