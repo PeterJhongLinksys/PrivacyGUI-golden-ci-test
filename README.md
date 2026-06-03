@@ -40,7 +40,16 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 ## Reports
 
 <!-- REPORTS:START -->
-_No reports yet. Run the workflows to generate links here._
+### Dev Baseline
+
+- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/dev/golden_gallery_report.html)
+
+### Daily Verify
+
+| Date | Report |
+|------|--------|
+| 2026-06-03 | [Verify Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/2026-06-03/golden_verify_report.html) |
+
 <!-- REPORTS:END -->
 
 ## Branch structure
