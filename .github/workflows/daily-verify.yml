@@ -11,9 +11,9 @@ on:
         default: 'main'
         type: string
       locales:
-        description: 'Comma-separated locales (e.g., en,es,fr)'
+        description: 'Comma-separated locales'
         required: false
-        default: 'en'
+        default: 'ar,da,de,el,en,es,es_ar,fi,fr,fr_ca,id,it,ja,ko,nb,nl,pl,pt,pt_pt,ru,sv,th,tr,vi,zh,zh_TW'
         type: string
       screens:
         description: 'Comma-separated screen widths (e.g., 480,1280)'
@@ -71,7 +71,7 @@ jobs:
 
       - name: Run golden verify
         working-directory: app
-        run: bash run_golden_verify.sh -l "${{ inputs.locales || 'en' }}" -s "${{ inputs.screens || '480,1280' }}"
+        run: bash run_golden_verify.sh -l "${{ inputs.locales || 'ar,da,de,el,en,es,es_ar,fi,fr,fr_ca,id,it,ja,ko,nb,nl,pl,pt,pt_pt,ru,sv,th,tr,vi,zh,zh_TW' }}" -s "${{ inputs.screens || '480,1280' }}"
 
       - name: Set today's date
         id: date

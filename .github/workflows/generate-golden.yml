@@ -14,12 +14,12 @@ on:
       branch:
         description: 'PrivacyGUI branch to test'
         required: true
-        default: 'main'
+        default: 'usp'
         type: string
       locales:
-        description: 'Comma-separated locales (e.g., en,es,fr)'
+        description: 'Comma-separated locales'
         required: true
-        default: 'en'
+        default: 'ar,da,de,el,en,es,es_ar,fi,fr,fr_ca,id,it,ja,ko,nb,nl,pl,pt,pt_pt,ru,sv,th,tr,vi,zh,zh_TW'
         type: string
       screens:
         description: 'Comma-separated screen widths (e.g., 480,1280)'
