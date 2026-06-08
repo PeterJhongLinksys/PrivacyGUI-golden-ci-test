@@ -42,11 +42,11 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 <!-- REPORTS:START -->
 ### Showcase (USP)
 
-- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/usp/golden_gallery_report.html)
+- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/usp/golden_gallery_report.html) — updated: 2026-06-03
 
 ### Dev Baseline
 
-- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/dev/golden_gallery_report.html)
+- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/dev/golden_gallery_report.html) — updated: 2026-06-08
 
 ### Daily Verify
 
