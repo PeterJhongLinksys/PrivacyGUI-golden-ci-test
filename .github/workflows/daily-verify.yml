@@ -106,6 +106,7 @@ jobs:
           scripts/prune_old_verify_reports.sh gh-pages-dir/verify/dev 7
 
       - name: Commit and push gh-pages
+        id: push-pages
         env:
           TODAY: ${{ steps.date.outputs.today }}
         run: |
@@ -147,6 +148,7 @@ jobs:
           )"
 
       - name: Update README report links
+        if: steps.push-pages.outcome == 'success'
         run: |
           git checkout main
           scripts/update_readme_links.sh gh-pages-dir README.md "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"

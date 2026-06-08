@@ -13,25 +13,33 @@ PAGES_DIR="$1"
 README="$2"
 BASE_URL="${3%/}"
 
+# Get last commit date for a path in the gh-pages worktree
+get_last_updated() {
+  local path="$1"
+  git -C "$PAGES_DIR" log -1 --format="%cs" -- "$path" 2>/dev/null || echo "unknown"
+}
+
 LINKS=""
 
 # Showcase gallery
 if [[ -f "$PAGES_DIR/golden/usp/golden_gallery_report.html" ]]; then
+  UPDATED=$(get_last_updated "golden/usp/")
   LINKS+="### Showcase (USP)\n"
   LINKS+="\n"
-  LINKS+="- [Gallery Report](${BASE_URL}/golden/usp/golden_gallery_report.html)\n"
+  LINKS+="- [Gallery Report](${BASE_URL}/golden/usp/golden_gallery_report.html) — updated: ${UPDATED}\n"
   LINKS+="\n"
 fi
 
 # Dev baseline gallery
 if [[ -f "$PAGES_DIR/golden/dev/golden_gallery_report.html" ]]; then
+  UPDATED=$(get_last_updated "golden/dev/")
   LINKS+="### Dev Baseline\n"
   LINKS+="\n"
-  LINKS+="- [Gallery Report](${BASE_URL}/golden/dev/golden_gallery_report.html)\n"
+  LINKS+="- [Gallery Report](${BASE_URL}/golden/dev/golden_gallery_report.html) — updated: ${UPDATED}\n"
   LINKS+="\n"
 fi
 
-# Daily verify reports (sorted newest first, max 7 days)
+# Daily verify reports (sorted newest first)
 if [[ -d "$PAGES_DIR/verify/dev" ]]; then
   DATES=$(find "$PAGES_DIR/verify/dev" -maxdepth 1 -type d -name "????-??-??" | sort -r)
   if [[ -n "$DATES" ]]; then

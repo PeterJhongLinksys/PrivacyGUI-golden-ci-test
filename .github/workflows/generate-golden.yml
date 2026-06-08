@@ -143,6 +143,7 @@ jobs:
           fi
 
       - name: Publish gallery report
+        id: push-pages
         env:
           SUBPATH: ${{ steps.gallery.outputs.subpath }}
         run: |
@@ -159,6 +160,7 @@ jobs:
           fi
 
       - name: Update README report links
+        if: steps.push-pages.outcome == 'success'
         run: |
           git checkout main
           scripts/update_readme_links.sh gh-pages-dir README.md "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
