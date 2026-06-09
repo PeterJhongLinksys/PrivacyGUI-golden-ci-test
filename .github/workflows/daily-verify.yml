@@ -76,7 +76,7 @@ jobs:
 
       - name: Set today's date
         id: date
-        run: echo "today=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+        run: echo "today=$(TZ=Asia/Taipei date +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Configure git user
         run: |
