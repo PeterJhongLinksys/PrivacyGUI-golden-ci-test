@@ -46,7 +46,7 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 
 ### Dev Baseline
 
-- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/dev/golden_gallery_report.html) — updated: 2026-06-08
+- [Gallery Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/golden/dev/golden_gallery_report.html) — updated: 2026-07-15
 
 ### Daily Verify
 
