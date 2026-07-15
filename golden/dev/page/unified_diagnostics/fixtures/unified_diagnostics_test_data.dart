@@ -1,3 +1,4 @@
+import 'package:privacy_gui/core/errors/service_error.dart';
 import 'package:privacy_gui/core/usp/models/operate_result.dart';
 import 'package:privacy_gui/page/unified_diagnostics/models/device_score.dart';
 import 'package:privacy_gui/page/unified_diagnostics/models/diagnostic_result.dart';
@@ -293,10 +294,10 @@ final allOkResultsState = UnifiedDiagnosticsState(
     ),
     DnsLookupCheckUIModel(
       hostName: 'www.google.com',
-      resolvedIps: ['142.250.196.68'],
+      resolvedIps: const ['142.250.196.68'],
       dnsServerUsed: '8.8.8.8',
       responseTimeMs: 15,
-      configuredDnsServers: ['8.8.8.8', '8.8.4.4'],
+      configuredDnsServers: const ['8.8.8.8', '8.8.4.4'],
       severity: DiagnosticSeverity.ok,
       titleKey: 'DNS Lookup',
       descriptionKey: 'Name resolution working (15ms)',
@@ -355,10 +356,10 @@ final dnsLookupFailureResultsState = UnifiedDiagnosticsState(
     ),
     DnsLookupCheckUIModel(
       hostName: 'www.google.com',
-      resolvedIps: [],
+      resolvedIps: const [],
       dnsServerUsed: '8.8.8.8',
       responseTimeMs: 0,
-      configuredDnsServers: ['8.8.8.8', '8.8.4.4'],
+      configuredDnsServers: const ['8.8.8.8', '8.8.4.4'],
       severity: DiagnosticSeverity.error,
       titleKey: 'DNS Lookup',
       descriptionKey: 'Name resolution failed — no response from DNS servers',
@@ -488,7 +489,7 @@ final wifiCoverageResultsState = UnifiedDiagnosticsState(
     ),
     WifiCoverageCheckUIModel(
       totalWirelessDevices: 8,
-      weakSignalDevices: ['Living Room TV', 'Bedroom Laptop'],
+      weakSignalDevices: const ['Living Room TV', 'Bedroom Laptop'],
       averageSignalStrength: -68,
       radios: const [
         WiFiRadioUIModel(
@@ -546,8 +547,10 @@ final meshBackhaulResultsState = UnifiedDiagnosticsState(
           nodeId: 'AA:BB:CC:DD:EE:01',
           label: 'Living Room Node',
           mediaType: 'Wi-Fi',
+          linkType: 'Wi-Fi',
           phyRateMbps: 450,
-          lastUplinkRateMbps: 380,
+          lastUplinkRateKbps: 380,
+          lastDownlinkRateKbps: 400,
           signalStrengthDbm: -55,
           isController: false,
           severity: MeshBackhaulSeverity.healthy,
@@ -556,8 +559,10 @@ final meshBackhaulResultsState = UnifiedDiagnosticsState(
           nodeId: 'AA:BB:CC:DD:EE:02',
           label: 'Bedroom Node',
           mediaType: 'Wi-Fi',
+          linkType: 'Wi-Fi',
           phyRateMbps: 120,
-          lastUplinkRateMbps: 85,
+          lastUplinkRateKbps: 85,
+          lastDownlinkRateKbps: 90,
           signalStrengthDbm: -78,
           isController: false,
           severity: MeshBackhaulSeverity.poor,
@@ -566,8 +571,10 @@ final meshBackhaulResultsState = UnifiedDiagnosticsState(
           nodeId: 'AA:BB:CC:DD:EE:03',
           label: 'Office Node',
           mediaType: 'Ethernet',
+          linkType: 'Ethernet',
           phyRateMbps: 1000,
-          lastUplinkRateMbps: 940,
+          lastUplinkRateKbps: 940,
+          lastDownlinkRateKbps: 950,
           signalStrengthDbm: 0,
           isController: false,
           severity: MeshBackhaulSeverity.healthy,
@@ -600,8 +607,8 @@ final deviceIssuesResultsState = UnifiedDiagnosticsState(
     DeviceIssuesCheckUIModel(
       totalDevices: 12,
       devicesWithIssues: 3,
-      weakSignalDevices: ['Smart TV', 'Tablet'],
-      lowDataRateDevices: ['Old Laptop'],
+      weakSignalDevices: const ['Smart TV', 'Tablet'],
+      lowDataRateDevices: const ['Old Laptop'],
       deviceScores: const [
         DeviceScoreUIModel(
           macAddress: 'AA:BB:CC:11:22:33',
@@ -729,7 +736,8 @@ const completedState = UnifiedDiagnosticsState(
 const errorState = UnifiedDiagnosticsState(
   step: DiagnosticStep.showingResults,
   flow: DiagnosticFlow.internet,
-  errorMessage: 'Connection timed out — unable to reach diagnostic service',
+  error: TimeoutError(
+      detail: 'Connection timed out — unable to reach diagnostic service'),
 );
 
 // =============================================================================
@@ -879,5 +887,6 @@ const manualToolsErrorState = NetworkDiagnosticsState(
   status: DiagnosticStatus.error,
   host: '192.168.99.99',
   pingCount: 3,
-  errorMessage: 'Ping timed out — no response from 192.168.99.99',
+  error:
+      TimeoutError(detail: 'Ping timed out — no response from 192.168.99.99'),
 );
