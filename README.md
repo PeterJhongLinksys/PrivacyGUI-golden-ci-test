@@ -52,6 +52,7 @@ PrivacyGUI depends on the private repo `linksys/privacyGUI-UI-kit`. Without SSH 
 
 | Date | Report |
 |------|--------|
+| 2026-07-20 | [Verify Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/2026-07-20/golden_verify_report.html) |
 | 2026-07-19 | [Verify Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/2026-07-19/golden_verify_report.html) |
 | 2026-07-18 | [Verify Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/2026-07-18/golden_verify_report.html) |
 | 2026-07-17 | [Verify Report](https://PeterJhongLinksys.github.io/PrivacyGUI-golden-ci-test/verify/dev/2026-07-17/golden_verify_report.html) |
