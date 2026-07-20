@@ -2,13 +2,12 @@
 set -euo pipefail
 
 if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <PAGES_WORKTREE> <KEEP_DAYS>" >&2
+  echo "Usage: $0 <VERIFY_DIR> <KEEP_DAYS>" >&2
   exit 1
 fi
 
-PAGES_WORKTREE="$1"
+VERIFY_DIR="$1"
 KEEP_DAYS="$2"
-VERIFY_DIR="$PAGES_WORKTREE/verify"
 
 if [ ! -d "$VERIFY_DIR" ]; then
   exit 0
